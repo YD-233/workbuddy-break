@@ -6,6 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $WORK = Join-Path $env:USERPROFILE "Desktop\WorkBuddy-Prompts-Workspace"
 $BACKUP_NAME = ".wb-prompt-original"
+$PRESET = Join-Path $PSScriptRoot "presets\prompt.tpl"
 
 function Get-CacheRoot {
     $home = $env:USERPROFILE
@@ -126,6 +127,38 @@ function Invoke-Restore {
     Write-Host "Restart WorkBuddy and start a new conversation to take effect."
 }
 
+function Invoke-Inject {
+    $root = Get-CacheRoot
+    if (-not $root) {
+        Write-Error "WorkBuddy plugin cache not found."
+        exit 1
+    }
+    if (-not (Test-Path $PRESET)) {
+        Write-Error "Preset prompt not found: $PRESET"
+        exit 1
+    }
+    $backup = Join-Path $root $BACKUP_NAME
+    if (-not (Test-Path $backup)) {
+        $targets = Get-Targets $root
+        foreach ($rel in $targets) { Copy-FileSafe (Join-Path $root $rel) (Join-Path $backup $rel) }
+        Write-Host "Official backup created at: $backup"
+    }
+    $modules = Get-ChildItem -Path $root -Directory | Where-Object { $_.Name -match '^welcomemode-' }
+    $count = 0
+    foreach ($mod in $modules) {
+        $versions = Get-ChildItem -Path $mod.FullName -Directory | Where-Object { -not $_.Name.StartsWith(".") }
+        foreach ($ver in $versions) {
+            $f = Join-Path $ver.FullName "prompt.tpl"
+            if (Test-Path $f) {
+                Copy-Item -Path $PRESET -Destination $f -Force
+                $count++
+            }
+        }
+    }
+    Write-Host "Injected preset prompt into $count main template(s)."
+    Write-Host "Quit WorkBuddy completely, reopen it and start a NEW conversation to load the new prompt."
+}
+
 function Invoke-Status {
     $root = Get-CacheRoot
     $rootText = if ($root) { $root } else { "NOT FOUND" }
@@ -156,16 +189,19 @@ function Show-Help {
     Write-Host ""
     Write-Host "Usage: .\wb-prompt.ps1 <command>"
     Write-Host ""
+    Write-Host "  inject    One-click: replace native prompt with the built-in preset"
     Write-Host "  extract   Copy active templates to the desktop workspace for editing"
     Write-Host "  apply     Inject workspace changes back into cache (auto backup on first run)"
     Write-Host "  restore   Restore the official original from backup"
     Write-Host "  status    Show cache, workspace and backup status"
     Write-Host ""
-    Write-Host "Typical flow: extract -> edit desktop files -> apply -> restart and open a NEW conversation"
+    Write-Host "Quick start: inject -> restart and open a NEW conversation"
+    Write-Host "Custom flow: extract -> edit desktop files -> apply -> restart and open a NEW conversation"
 }
 
 $cmd = if ($args.Count -gt 0) { $args[0] } else { "" }
 switch ($cmd.ToLower()) {
+    "inject"  { Invoke-Inject }
     "extract" { Invoke-Extract }
     "apply"   { Invoke-Apply }
     "restore" { Invoke-Restore }

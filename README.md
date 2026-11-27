@@ -29,15 +29,34 @@ WorkBuddy 的系统提示词由两部分拼装：
 
 ## 使用方法
 
-### 方式一：双击运行（推荐）
+### 一键替换（最简单）
+
+工具内置了一份改好的提示词预设，放在 `presets\prompt.tpl`。它把原生提示词替换成一套开放策略的版本（身份标识为 DeepSeek-Cyber-Uncensored-Abliterated）。
+
+直接用一键替换，三步搞定：
+
+1. 双击 `run.bat`，选 `[1] One-click inject preset prompt`
+2. 完全退出 WorkBuddy 再打开
+3. 新建一个对话
+
+命令行方式：
+
+```powershell
+.\wb-prompt.ps1 inject
+```
+
+一键替换只覆盖主模板，不改动行为片段（fragments），首次运行会自动备份官方原版。想恢复官方版本，选 `[4]` 或运行 `restore`。
+
+### 方式一：双击运行（菜单）
 
 双击 `run.bat`，按菜单数字选择操作：
 
 ```
-[1] 提取模板
-[2] 注入改动
-[3] 恢复官方原版
-[4] 查看状态
+[1] 一键替换内置提示词预设
+[2] 提取模板（手动编辑）
+[3] 注入改动（apply）
+[4] 恢复官方原版
+[5] 查看状态
 [0] 退出
 ```
 
@@ -46,19 +65,20 @@ WorkBuddy 的系统提示词由两部分拼装：
 在本文件夹打开 PowerShell，执行：
 
 ```powershell
-.\wb-prompt.ps1 extract
-.\wb-prompt.ps1 apply
-.\wb-prompt.ps1 restore
-.\wb-prompt.ps1 status
+.\wb-prompt.ps1 inject     # 一键替换内置预设
+.\wb-prompt.ps1 extract    # 提取模板供编辑
+.\wb-prompt.ps1 apply      # 注入手动改动
+.\wb-prompt.ps1 restore    # 恢复官方原版
+.\wb-prompt.ps1 status     # 查看状态
 ```
 
 如果 PowerShell 提示"禁止运行脚本"，用这个方式绕过：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\wb-prompt.ps1 extract
+powershell -ExecutionPolicy Bypass -File .\wb-prompt.ps1 inject
 ```
 
-## 完整流程
+## 自定义提示词流程
 
 ```powershell
 # 1. 提取：把当前生效的模板复制到桌面工作目录
@@ -85,10 +105,13 @@ powershell -ExecutionPolicy Bypass -File .\wb-prompt.ps1 extract
 
 | 命令 | 作用 |
 | :--- | :--- |
+| `inject` | 一键把内置预设 `presets\prompt.tpl` 覆盖到所有主模板 |
 | `extract` | 把缓存里所有模板提取到桌面工作目录，保留目录结构 |
 | `apply` | 把工作目录的文件写回缓存；首次运行自动建立官方备份 |
 | `restore` | 从备份一键恢复官方原版 |
 | `status` | 查看缓存位置、文件数量、备份状态、改动差异 |
+
+`presets\prompt.tpl` 就是内置的那份提示词。想换成你自己的版本，直接用文本编辑器覆盖这个文件，再运行 `inject` 即可。
 
 ## 备份与恢复
 

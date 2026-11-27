@@ -8,18 +8,20 @@ echo ==========================================
 echo    WorkBuddy Prompt Tool  -  Windows
 echo ==========================================
 echo.
-echo   [1] Extract templates  (extract)
-echo   [2] Inject changes     (apply)
-echo   [3] Restore official   (restore)
-echo   [4] Check status       (status)
+echo   [1] One-click inject preset prompt
+echo   [2] Extract templates  (edit manually)
+echo   [3] Inject changes     (apply)
+echo   [4] Restore official   (restore)
+echo   [5] Check status       (status)
 echo   [0] Exit
 echo.
-set /p choice=Select an option (0-4):
+set /p choice=Select an option (0-5):
 
-if "%choice%"=="1" set cmd=extract
-if "%choice%"=="2" set cmd=apply
-if "%choice%"=="3" set cmd=restore
-if "%choice%"=="4" set cmd=status
+if "%choice%"=="1" set cmd=inject
+if "%choice%"=="2" set cmd=extract
+if "%choice%"=="3" set cmd=apply
+if "%choice%"=="4" set cmd=restore
+if "%choice%"=="5" set cmd=status
 if "%choice%"=="0" exit
 
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0wb-prompt.ps1" %cmd%
