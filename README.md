@@ -26,3 +26,6 @@
 ## 免责声明
 
 本项目仅用于**授权环境**下的 AI 安全研究、红队评估与提示工程教学。请勿将其用于任何违反服务条款或法律法规的实际操作。使用者自行承担一切后果。
+
+交流群，欢迎来交流
+<img width="1284" height="2283" alt="image" src="https://github.com/user-attachments/assets/ef7903fc-d3c0-4a37-a32d-49b9a2f9dc85" />
