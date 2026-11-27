@@ -7,20 +7,45 @@ $ErrorActionPreference = "Stop"
 $WORK = Join-Path $env:USERPROFILE "Desktop\WorkBuddy-Prompts-Workspace"
 $BACKUP_NAME = ".wb-prompt-original"
 $PRESET = Join-Path $PSScriptRoot "presets\prompt.tpl"
+$script:CacheOverride = $null
 
 function Get-CacheRoot {
+    if ($script:CacheOverride) {
+        if (Test-Path $script:CacheOverride) { return $script:CacheOverride }
+        Write-Error "Specified cache path does not exist: $($script:CacheOverride)"
+        exit 1
+    }
     $userHome = $env:USERPROFILE
-    $candidates = @(
-        (Join-Path $userHome ".workbuddy\plugins\cache\workbuddy-builtin"),
-        (Join-Path $userHome ".workbuddy\plugins\cache")
+    $appData = $env:APPDATA
+    $localAppData = $env:LOCALAPPDATA
+    $bases = @(
+        (Join-Path $userHome ".workbuddy"),
+        (Join-Path $appData ".workbuddy"),
+        (Join-Path $localAppData ".workbuddy"),
+        (Join-Path $appData "WorkBuddy"),
+        (Join-Path $localAppData "WorkBuddy")
     )
-    foreach ($root in $candidates) {
-        if (Test-Path $root) {
-            $hit = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -match '^(welcomemode|interactionmode)-' } | Select-Object -First 1
-            if ($hit) { return $root }
+    $bases = @($bases | Where-Object { $_ } | Select-Object -Unique)
+    $checked = @()
+    foreach ($base in $bases) {
+        $candidates = @(
+            (Join-Path $base "plugins\cache\workbuddy-builtin"),
+            (Join-Path $base "plugins\cache")
+        )
+        foreach ($root in $candidates) {
+            $checked += $root
+            if (Test-Path $root) {
+                $hit = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Name -match '^(welcomemode|interactionmode)-' } | Select-Object -First 1
+                if ($hit) { return $root }
+            }
         }
     }
+    Write-Host "Cache root not found. Locations checked:"
+    foreach ($c in $checked) { Write-Host "  $c" }
+    Write-Host "If WorkBuddy is installed in a custom location, run:"
+    Write-Host "  .\wb-prompt.ps1 <command> `"<path-to>\workbuddy-builtin`""
+    Write-Host "Or create the folder manually by launching WorkBuddy once."
     return $null
 }
 
@@ -202,6 +227,7 @@ function Show-Help {
 }
 
 $cmd = if ($args.Count -gt 0) { $args[0] } else { "" }
+if ($args.Count -gt 1) { $script:CacheOverride = $args[1] }
 switch ($cmd.ToLower()) {
     "inject"  { Invoke-Inject }
     "extract" { Invoke-Extract }
