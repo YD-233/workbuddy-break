@@ -9,10 +9,10 @@ $BACKUP_NAME = ".wb-prompt-original"
 $PRESET = Join-Path $PSScriptRoot "presets\prompt.tpl"
 
 function Get-CacheRoot {
-    $home = $env:USERPROFILE
+    $userHome = $env:USERPROFILE
     $candidates = @(
-        (Join-Path $home ".workbuddy\plugins\cache\workbuddy-builtin"),
-        (Join-Path $home ".workbuddy\plugins\cache")
+        (Join-Path $userHome ".workbuddy\plugins\cache\workbuddy-builtin"),
+        (Join-Path $userHome ".workbuddy\plugins\cache")
     )
     foreach ($root in $candidates) {
         if (Test-Path $root) {
@@ -93,7 +93,7 @@ function Invoke-Apply {
     $applied = 0
     $skipped = 0
     foreach ($file in $files) {
-        $rel = $file.FullName.Substring($WORK.Length).TrimStart('\', '/')
+        $rel = $file.FullName.Substring($WORK.Length).TrimStart([char]'\', [char]'/')
         $dest = Join-Path $root $rel
         if (-not (Test-Path $dest)) {
             Write-Host "  Skip (no target in cache): $rel"
@@ -103,7 +103,9 @@ function Invoke-Apply {
         Copy-Item -Path $file.FullName -Destination $dest -Force
         $applied++
     }
-    Write-Host "Applied $applied file(s)" + $(if ($skipped) { ", skipped $skipped" } else { "" }) + "."
+    $skipText = ""
+    if ($skipped -gt 0) { $skipText = ", skipped $skipped" }
+    Write-Host "Applied $applied file(s)$skipText."
     Write-Host "Quit WorkBuddy completely, reopen it and start a NEW conversation to load the new prompt."
 }
 
@@ -120,7 +122,7 @@ function Invoke-Restore {
     }
     $files = Get-AllFiles $backup
     foreach ($file in $files) {
-        $rel = $file.FullName.Substring($backup.Length).TrimStart('\', '/')
+        $rel = $file.FullName.Substring($backup.Length).TrimStart([char]'\', [char]'/')
         Copy-FileSafe $file.FullName (Join-Path $root $rel)
     }
     Write-Host "Restored $($files.Count) file(s) to the official version."
