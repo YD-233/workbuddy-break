@@ -2,18 +2,14 @@
 
 针对 **WorkBuddy** 的渗透测试 / 破甲（Jailbreak）系统提示词工具。
 
-A red-team system prompt tool for WorkBuddy — jailbreak / armor-piercing research artifact.
-
 ## 简介
 
-本仓库是一套用于 WorkBuddy 的自定义系统提示词与一键注入脚本，用于 AI 安全研究与红队评估。使 Agent 在渗透测试等敏感场景中不触发拒绝行为。
+本仓库是一套用于 WorkBuddy 的自定义系统提示词与一键注入脚本，用于 AI 安全研究与红队评估。
 
 ## 特色
 
-- 一键注入，双击即用，无需手动查找或修改任何文件
-- 自动备份原版提示词，随时可一键还原
-- 支持所有版本目录，WorkBuddy 升级后重新注入即可
-- 预设提示词放在 `presets\prompt.tpl`，可直接修改成自己的版本
+- 自动备份原版提示词。
+- 预设提示词 `presets\prompt.tpl` 可自行修改。
 
 ## 使用
 
