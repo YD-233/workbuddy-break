@@ -186,6 +186,28 @@ function Invoke-Inject {
     Write-Host "Quit WorkBuddy completely, reopen it and start a NEW conversation to load the new prompt."
 }
 
+function Invoke-Find {
+    Write-Host "Searching for WorkBuddy prompt cache. This may take a while..."
+    $roots = @($env:USERPROFILE, $env:APPDATA, $env:LOCALAPPDATA) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+    $found = @()
+    foreach ($r in $roots) {
+        Write-Host "  Scanning: $r"
+        Get-ChildItem -Path $r -Directory -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -eq "workbuddy-builtin" -or $_.Name -like "welcomemode-*" -or $_.Name -like "interactionmode-*" } |
+            ForEach-Object { $found += $_.FullName }
+    }
+    $found = @($found | Select-Object -Unique)
+    if ($found.Count -eq 0) {
+        Write-Host "Nothing found. WorkBuddy may not have been launched yet, or is installed in a custom location."
+    } else {
+        Write-Host "Found $($found.Count) location(s):"
+        foreach ($f in $found) { Write-Host "  $f" }
+        Write-Host ""
+        Write-Host "Use the 'workbuddy-builtin' parent folder as the cache path:"
+        Write-Host "  .\wb-prompt.ps1 <command> `"<path>`""
+    }
+}
+
 function Invoke-Status {
     $root = Get-CacheRoot
     $rootText = if ($root) { $root } else { "NOT FOUND" }
@@ -221,6 +243,7 @@ function Show-Help {
     Write-Host "  apply     Inject workspace changes back into cache (auto backup on first run)"
     Write-Host "  restore   Restore the official original from backup"
     Write-Host "  status    Show cache, workspace and backup status"
+    Write-Host "  find      Search the disk for the WorkBuddy cache location"
     Write-Host ""
     Write-Host "Quick start: inject -> restart and open a NEW conversation"
     Write-Host "Custom flow: extract -> edit desktop files -> apply -> restart and open a NEW conversation"
@@ -234,5 +257,6 @@ switch ($cmd.ToLower()) {
     "apply"   { Invoke-Apply }
     "restore" { Invoke-Restore }
     "status"  { Invoke-Status }
+    "find"    { Invoke-Find }
     default   { Show-Help }
 }
